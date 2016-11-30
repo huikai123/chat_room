@@ -1,9 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<title>KC Chat</title>
+	<style type="text/css">
+		#chat{
+			height: 500px;
+		}
+	</style>
 </head>
 <body>
+	<div id='chat'></div>
+	<form id='send-message'>
+		<input size='35' id='message'></input>
+		<input type="submit"></input>
+	</form>
 
+	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+		//document.ready()
+		$(function(){
+			var socket = io.connect();
+			//use variables to reference div id
+			var $messageForm = $('#send-message');
+			var $messageBox = $('#message');
+			var $chat = $('#chat');
+			//on call listener
+			$messageForm.submit(function(e){
+				//stop refresh when submit 
+				e.preventDefault();
+				//send event to server, parameter(name, data)
+				socket.emit('send message', $messageBox.val());
+				//clear messageBox after submit
+				$messageBox.val("");
+			});
+			//receive message from client side
+			socket.on('new message', function(data){
+				//display the message 
+				$chat.append(data + "<br/>");
+			});
+		});
+	</script>
 </body>
 </html>

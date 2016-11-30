@@ -12,11 +12,11 @@ app.get('/', function (req,res){
 	res.sendFile(__dirname + '/public/index.html');
 });
 
-//receive message from browser
+//receive message from browser; load codes for socket
 io.sockets.on('connection', function(socket){
 	//same name as send message 
 	socket.on('send message', function(data){
 		//send message to all users include me
-		io.socket.emit('new message', data);
+		io.sockets.emit('new message', data);
 	});
 });
