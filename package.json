@@ -1,0 +1,24 @@
+{
+  "name": "chat_room",
+  "version": "1.0.0",
+  "description": "MEAN stack chat application",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huikai123/chat_room.git"
+  },
+  "author": "Kai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/huikai123/chat_room/issues"
+  },
+  "homepage": "https://github.com/huikai123/chat_room#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "socket.io": "^1.7.1"
+  }
+}
