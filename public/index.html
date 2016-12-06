@@ -75,7 +75,7 @@
 			socket.on('usernames', function(data){
 				//add usernames in the list
 				var html = '';
-				for (i=0; i<data.length; i++){
+				for (var i=0; i<data.length; i++){
 					html +=data[i] + '<br/>'
 				}
 				//add usernames in the div
@@ -92,11 +92,23 @@
 				//clear messageBox after submit
 				$messageBox.val("");
 			});
+
+			socket.on('load old msg', function(docs){
+				for(var i=docs.length-1; i>=0; i--){
+					displayMsg(docs[i]);
+				}
+			});
+
 			//receive message from client side
 			socket.on('new message', function(data){
+				displayMsg(data);
+			});
+
+			function displayMsg(data){
+				console.log("displayMsg:" + data);
 				//display the message 
 				$chat.append('<span class="msg"><b>'+ data.nick + ': </b>' + data.msg + '</span><br/>');
-			});
+			}
 
 			socket.on('whisper', function(data){
 				 
