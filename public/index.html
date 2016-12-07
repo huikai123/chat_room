@@ -80,6 +80,10 @@
 				}
 				//add usernames in the div
 				$users.html(html);
+				//new users join notification
+				socket.broadcast.emit('user joined', function(){
+					$chat.append('<span class="join"><b>'+ socket.nickname + 'has joined the room! </b></span><br/>')
+				})
 			});
 
 			//on call listener
@@ -108,14 +112,23 @@
 				console.log("displayMsg:" + data);
 				//display the message 
 				$chat.append('<span class="msg"><b>'+ data.nick + ': </b>' + data.msg + '</span><br/>');
-			}
+			};
 
 			socket.on('whisper', function(data){
 				 
 				$chat.append('<span class="whisper"><b>'+ data.nick + ': </b>' + data.msg + '</span><br/>');
 			});
 
+			socket.on('disconnect', function(){
+				//user leaves notification
+				socket.broadcast.emit('updateChat', function(){
+					$chat.append('<span class="leave"><b>'+ socket.nickname + 'has left the room! </b></span><br/>');
+				});
+			});
+
 		});
+
 	</script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
 </body>
 </html>

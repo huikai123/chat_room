@@ -8,6 +8,7 @@ var express = require ('express'),
 	io = require('socket.io').listen(server),
 //create object to hold users
 	users = {};
+
 //listen to port 3000
 server.listen(3000);
 
@@ -37,6 +38,11 @@ app.get('/', function (req,res){
 
 //load codes for socket
 io.sockets.on('connection', function(socket){
+
+  
+    
+   
+
 	var query = Chat.find({}); 
 	query.sort('-created').limit(20).exec(function(err,docs){
 		if(err) throw err;
@@ -50,13 +56,21 @@ io.sockets.on('connection', function(socket){
 			callback(false);
 		} else {
 			callback(true);
-			//store nickname to socket
+			//store the nickname in the socket session
 			socket.nickname = data;
-			//nickname as key and socket as value
+			// add the client's username to the global list
 			users[socket.nickname] = socket;
+
+		    userJoin();
 			updateNicknames();
 		}
 	});
+
+	function userJoin(){
+		// echo globally (all clients) that a person has connected
+    		socket.broadcast.emit('user joined', {nick: socket.nickname} + "has joined the room!");
+    		console.log("new user join:" + socket.nickname);
+	}
 
 	//all users can see new nicknames
 	function updateNicknames(){
@@ -102,6 +116,9 @@ io.sockets.on('connection', function(socket){
 
 	//disconnect from server
 	socket.on('disconnect', function(data){
+		
+		socket.broadcast.emit('updateChat', {nick: socket.nickname} + " has left the room.");
+		console.log("user left:" + socket.nickname);
 		//if no username entered, return
 		if(!socket.nickname) return;
 		//remove nickname from object
