@@ -38,66 +38,59 @@ app.get('/', function (req,res){
 
 //load codes for socket
 io.sockets.on('connection', function(socket){
-
-  
-    
-   
-
+	//select all documents in DB
 	var query = Chat.find({}); 
+	//sort by latest 20 messages
 	query.sort('-created').limit(20).exec(function(err,docs){
 		if(err) throw err;
 		socket.emit('load old msg', docs);
 	});
 
 	//receive nicknames from client side
-	socket.on('new user', function(data,callback){
-		// check to see if users exist or not
+	socket.on('new user', function(data,callback){ 
 		if (data in users){
 			callback(false);
+		//if users not exist
 		} else {
 			callback(true);
-			//store the nickname in the socket session
+			//store data input as the nickname
 			socket.nickname = data;
-			// add the client's username to the global list
+			// add the username to the global list (backend)
 			users[socket.nickname] = socket;
-
-		    userJoin();
 			updateNicknames();
 		}
 	});
 
-	function userJoin(){
-		// echo globally (all clients) that a person has connected
-    		socket.broadcast.emit('user joined', {nick: socket.nickname} + "has joined the room!");
-    		console.log("new user join:" + socket.nickname);
-	}
-
-	//all users can see new nicknames
+	
+	// add the username to the list (frontend)
 	function updateNicknames(){
 		io.sockets.emit('usernames', Object.keys(users));
+		console.log("new user join:" + socket.nickname);
 	}
 	
 	//receive message from browser
 	socket.on('send message', function(data, callback){
+
 		//trim spaces before and after
 		var msg = data.trim();
-		console.log('after trimming message is: ' + msg);
-		// use "/w " to begin private message
-		if (msg.substr(0,3) === "/w "){
-			msg = msg.substr(3);
-			//space after username
+		// use "@" to begin private message
+		if (msg.substr(0,1) === "@"){
+			msg = msg.substr(1);
+			//get the position of the white space after username
 			var ind = msg.indexOf(' ');
-			//if there is input in message box
+			//if message box is not empty
 			if(ind !== -1){
-				//this part is user name
+				//this is user name
 				var name = msg.substring(0, ind);
-				//message starts here
+				//actual message starts here
 				var msg = msg.substring(ind + 1);
 				//if user name is in the list
 				if (name in users){
+					//send private message to selected user only
 					users [name].emit('whisper', {msg: msg, nick: socket.nickname});
-					console.log('message sent is: ' + msg);
-					console.log('Whisper!');
+					//send private message to sender himself
+					users [socket.nickname].emit('whisper', {msg: msg, nick: socket.nickname});
+
 				} else {
 					callback('Error! Enter a valid user.');
 				}			
@@ -108,8 +101,9 @@ io.sockets.on('connection', function(socket){
 			var newMsg = new Chat({msg: msg, nick: socket.nickname});
 			newMsg.save(function(err){
 				if (err) throw err;
-			//send message to all users include me, with username
+			//send message to all users including sender
 			io.sockets.emit('new message', {msg: msg, nick: socket.nickname});
+			console.log("time:"+created);
 			});
 		}
 	});
@@ -117,7 +111,7 @@ io.sockets.on('connection', function(socket){
 	//disconnect from server
 	socket.on('disconnect', function(data){
 		
-		socket.broadcast.emit('updateChat', {nick: socket.nickname} + " has left the room.");
+		io.emit('updateChat', {nick: socket.nickname});
 		console.log("user left:" + socket.nickname);
 		//if no username entered, return
 		if(!socket.nickname) return;

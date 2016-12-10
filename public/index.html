@@ -5,6 +5,20 @@
 	<style type="text/css">
 		#chat{
 			height: 500px;
+			width: 1000px;
+			overflow-y: auto;
+		}
+		#public{
+			
+			width: 500px;
+			float: left;
+			border-color: red;
+		}
+		#private{
+			
+			width: 500px;
+			float: auto;
+			border-color: red;
 		}
 		#contentWrap{
 			display: none;
@@ -20,6 +34,9 @@
 			color: gray;
 			font-style: italic;
 		}
+		#send-message{
+			margin: auto;
+		}
 	</style>
 </head>
 <body>
@@ -34,7 +51,10 @@
 
 	<div id='contentWrap'>
 		<div id='chatWrap'>
-			<div id='chat'></div>
+			<div id='chat'>
+				<div id='public'></div>
+				<div id='private'></div>
+			</div>
 			<form id='send-message'>
 				<input size='35' id='message'></input>
 				<input type="submit"></input>
@@ -59,17 +79,22 @@
 			var $chat = $('#chat');
 
 			$nickForm.submit(function(e){
+				//no refresh the page
 				e.preventDefault();
-				//add a callback function to check the name availability 
+				//check name availability 
 				socket.emit('new user', $nickBox.val(), function(data){
+						//if user name is valid(unque)
 						if(data){
+							//login in page hide
 							$('#nickWrap').hide();
+							//chat room show
 							$('#contentWrap').show();
+							//new users join notification
+							$chat.append('<span class="join"><b>'+ $nickBox.val() + ' joined the room! </b></span><br/>');
 						} else {
 							$nickError.html("That username is already taken. Try again!");
-						}
+						}		
 				});
-				$nickBox.val('');
 			});
 
 			socket.on('usernames', function(data){
@@ -80,10 +105,6 @@
 				}
 				//add usernames in the div
 				$users.html(html);
-				//new users join notification
-				socket.broadcast.emit('user joined', function(){
-					$chat.append('<span class="join"><b>'+ socket.nickname + 'has joined the room! </b></span><br/>')
-				})
 			});
 
 			//on call listener
@@ -92,12 +113,14 @@
 				e.preventDefault();
 				socket.emit('send message', $messageBox.val(),function(data){
 					$chat.append('<span class="error">'+ data + '</span><br/>');
+					console.log("what's data:" + data);
 				});
 				//clear messageBox after submit
 				$messageBox.val("");
 			});
 
 			socket.on('load old msg', function(docs){
+				///display descending lastest chat history dicending
 				for(var i=docs.length-1; i>=0; i--){
 					displayMsg(docs[i]);
 				}
@@ -109,21 +132,22 @@
 			});
 
 			function displayMsg(data){
-				console.log("displayMsg:" + data);
-				//display the message 
+				//display the public message 
+				$chat.append('<span class="time"><b>'+ data.created + '</b></span><br/>');
 				$chat.append('<span class="msg"><b>'+ data.nick + ': </b>' + data.msg + '</span><br/>');
 			};
 
 			socket.on('whisper', function(data){
-				 
+				//display private message (frontend) 
+				$chat.append('<span class="time"><b>'+ data.created + '</b></span><br/>');
 				$chat.append('<span class="whisper"><b>'+ data.nick + ': </b>' + data.msg + '</span><br/>');
 			});
 
-			socket.on('disconnect', function(){
+			socket.on('disconnect', function(data){
 				//user leaves notification
-				socket.broadcast.emit('updateChat', function(){
-					$chat.append('<span class="leave"><b>'+ socket.nickname + 'has left the room! </b></span><br/>');
-				});
+				socket.emit('updateChat', $nickBox.val(), function(data){
+				$chat.append('<span class="leave"><b>'+ $nickBox.val() + ' left the room! </b></span><br/>');
+				})
 			});
 
 		});
