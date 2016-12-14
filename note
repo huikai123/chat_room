@@ -1,14 +1,15 @@
 To Do list:
-1. display user connect and disconnect notification (pending)
-2. convert time format (pending)
-3  get bootstrap (half way done)
- 
+2. delete nickWrap and use login instead
+3. get bootstrap (half way done) 
 5. login in validation (optional)
 6. user authentication
-
 7. build users collection in DB
 8. store history for private message 
 9. clear history button (optional)
 10. build multiple chat rooms (optional)
 11. prevent sending empty message
 12. not sending message to myself
+
+Debug:
+1. display user connect and disconnect notification (pending)
+2. convert time format (pending) 

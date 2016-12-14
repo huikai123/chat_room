@@ -132,8 +132,13 @@
 			});
 
 			function displayMsg(data){
+				var timeStamp=parseInt(data.created.toString().subString(0,8), 16)*1000;
+				console.log("timeStamp: "+ timeStamp);
+				var date = new Date(timeStamp);
+				console.log("date: " + date);
 				//display the public message 
 				$chat.append('<span class="time"><b>'+ data.created + '</b></span><br/>');
+
 				$chat.append('<span class="msg"><b>'+ data.nick + ': </b>' + data.msg + '</span><br/>');
 			};
 

@@ -1,40 +1,30 @@
-//require express module
+//Denpendecies
 var express = require ('express'),
-	app = express(),
-//require mongoose for mongodb
+	// app = express(),
 	mongoose = require ('mongoose'),
+	path = require('path'),
+
 //create a HTTP server
 	server = require ('http').createServer(app),
 	io = require('socket.io').listen(server),
 //create object to hold users
-	users = {};
+	users = {},
+//bring in Chat and User models
+	Chat = require('./models/Chat.js'),
+ 	User = require('./models/User.js'),
+//require routes
+ 	route = require('./controllers/router.js');
 
 //listen to port 3000
 server.listen(3000);
 
-//connect to mongodb
-mongoose.connect('mongodb://localhost/chat', function(err){
-	if (err){
-		console.log("There is problem with Mongo connection" + err);
-	} else {
-		console.log("connected to mongodb!");
-	}
-});
 
-//create a schema
-var chatSchema = mongoose.Schema({
-	nick: String,
-	msg: String,
-	created: {type: Date, default: Date.now}
-});
 
-//create a model
-var Chat = mongoose.model('Message', chatSchema);
 
-//create a route, set it root directory
-app.get('/', function (req,res){
-	res.sendFile(__dirname + '/public/index.html');
-});
+// //create a route, set it root directory
+// app.get('/', function (req,res){
+// 	res.sendFile(__dirname + '/public/index.html');
+// });
 
 //load codes for socket
 io.sockets.on('connection', function(socket){
